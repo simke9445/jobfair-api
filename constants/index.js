@@ -24,7 +24,7 @@ const jobFairApplicationStatus = {
   pending: 'PENDING',
 };
 
-const jobFairAreaStatus = {
+const jobFairBoothStatus = {
   taken: 'TAKEN',
   free: 'FREE',
 };
@@ -40,6 +40,6 @@ module.exports = {
   contestApplicationStatus,
   contestTypes,
   jobFairApplicationStatus,
-  jobFairAreaStatus,
+  jobFairBoothStatus,
   jobFairScheduleType,
 };

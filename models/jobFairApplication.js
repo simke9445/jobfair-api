@@ -25,6 +25,10 @@ const JobFairApplicationSchema = new Schema({
     enum: Object.values(jobFairApplicationStatus),
     default: jobFairApplicationStatus.pending,
   },
+  schedule: {
+    type: Schema.Types.ObjectId,
+    ref: 'JobFairSchedule',
+  },
   comment: String,
 });
 

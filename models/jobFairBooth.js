@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const { jobFairAreaStatus } = require('../constants');
+const { jobFairBoothStatus } = require('../constants');
 
-const JobFairAreaScheme = new Schema({
+const JobFairBoothSchema = new Schema({
   location: String,
   status: {
     type: String,
-    enum: Object.values(jobFairAreaStatus),
-    default: jobFairAreaStatus.free,
+    enum: Object.values(jobFairBoothStatus),
+    default: jobFairBoothStatus.free,
   },
   company: {
     type: Schema.Types.ObjectId,
@@ -20,4 +20,4 @@ const JobFairAreaScheme = new Schema({
   },
 });
 
-module.exports = mongoose.model('JobFairArea', JobFairAreaScheme);
+module.exports = mongoose.model('JobFairBooth', JobFairBoothSchema);

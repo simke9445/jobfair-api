@@ -1,3 +1,5 @@
+const { mockJobFair } = require('../utils/mocks');
+
 class JobFairController {
   /**
    * GET: /jobfairs
@@ -5,7 +7,15 @@ class JobFairController {
    * @param {Response} res 
    */
   static async getJobFairs(req, res) {
+    try {
+      const jobFair = mockJobFair();
 
+      res.statusCode = 200;
+      res.json([jobFair]);
+    } catch (err) {
+      res.statusCode = 400;
+      res.json(err);
+    }
   }
 
   /**
@@ -14,7 +24,15 @@ class JobFairController {
    * @param {Response} res 
    */
   static async getJobFairById(req, res) {
+    try {
+      const jobFair = mockJobFair();
 
+      res.statusCode = 200;
+      res.json(jobFair);
+    } catch (err) {
+      res.statusCode = 400;
+      res.json(err);
+    }
   }
 
   /**
@@ -27,7 +45,6 @@ class JobFairController {
   }
 
   // TODO: check if we need GET request for fair applications
-
   /**
    * POST: /jobfairs/:id/applications
    * @param {Request} req 

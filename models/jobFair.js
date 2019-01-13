@@ -1,29 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const { jobFairScheduleType } = require('../constants');
-
-const JobFairScheduleSchema = new Schema({
+const JobFairInterval = new Schema({
   from: {
-    type: Date,
+    type: String,
     required: true,
   },
   to: {
-    type: Date,
-    required: true,
-  },
-  area: {
     type: String,
     required: true,
-  },
-  type: {
-    type: String,
-    enum: Object.values(jobFairScheduleType),
-    default: jobFairScheduleType.lesson,
-  },
-  application: {
-    type: Schema.Types.ObjectId,
-    ref: 'JobFairApplication',
   },
 });
 
@@ -72,15 +57,21 @@ const JobFairSchema = new Schema({
     type: String,
     required: true,
   },
-  areas: [{
+  areas: [String],
+  booths: [{
     type: Schema.Types.ObjectId,
-    ref: 'JobFairArea',
+    ref: 'JobFairBooth',
   }],
   applications: [{
     type: Schema.Types.ObjectId,
     ref: 'JobFairApplication',
   }],
-  schedules: [JobFairScheduleSchema],
+  schedules: [{
+    type: Schema.Types.ObjectId,
+    ref: 'JobFairSchedule',
+  }],
+  biographyInterval: JobFairInterval,
+  applicationInterval: JobFairInterval,
 });
 
 module.exports = mongoose.model('JobFair', JobFairSchema);

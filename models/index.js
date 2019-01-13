@@ -8,7 +8,6 @@ const Contest = require('./contest');
 const ContestApplication = require('./contestApplication');
 const JobFair = require('./jobFair');
 const JobFairApplication = require('./jobFairApplication');
-const JobFairArea = require('./jobFairArea');
 const JobFairPackage = require('./jobFairPackage');
 const JobFairService = require('./jobFairService');
 
@@ -23,7 +22,6 @@ module.exports = {
   ContestApplication,
   JobFair,
   JobFairApplication,
-  JobFairArea,
   JobFairPackage,
   JobFairService,
 };
