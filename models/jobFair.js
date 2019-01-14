@@ -19,14 +19,6 @@ const JobFairSchema = new Schema({
     type: String,
     required: true,
   },
-  packages: [{
-    type: Schema.Types.ObjectId,
-    ref: 'JobFairPackage',
-  }],
-  services: [{
-    type: Schema.Types.ObjectId,
-    ref: 'JobFairService'
-  }],
   startDate: {
     type: Date,
     required: true,
@@ -63,14 +55,6 @@ const JobFairSchema = new Schema({
   booths: [{
     type: Schema.Types.ObjectId,
     ref: 'JobFairBooth',
-  }],
-  applications: [{
-    type: Schema.Types.ObjectId,
-    ref: 'JobFairApplication',
-  }],
-  schedules: [{
-    type: Schema.Types.ObjectId,
-    ref: 'JobFairSchedule',
   }],
   biographyInterval: JobFairInterval,
   applicationInterval: JobFairInterval,

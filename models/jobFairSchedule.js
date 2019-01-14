@@ -25,6 +25,10 @@ const JobFairScheduleSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'JobFairApplication',
   },
+  fair: {
+    type: Schema.Types.ObjectId,
+    ref: 'JobFair',
+  },
 });
 
 module.exports = mongoose.model('JobFairSchedule', JobFairScheduleSchema);

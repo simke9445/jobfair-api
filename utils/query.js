@@ -51,10 +51,20 @@ const getPersonalQuery = (personalKey, userId) => ({
   $and: [{ [personalKey]: userId }],
 });
 
+const getOverlappingPeriodQuery = (fromKey, toKey, overlapfromValue, overlapToValue) => {
+  return {
+    $and: [
+      { [fromKey]: { $lte: overlapToValue } },
+      { [toKey]: { $gte: overlapFromValue } },
+    ]
+  };
+};
+
 
 module.exports = {
   convertToQuery,
   getActivePeriodQuery,
   getFinishedPeriodQuery,
   getPersonalQuery,
+  getOverlappingPeriodQuery,
 };
