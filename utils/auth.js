@@ -27,7 +27,7 @@ const jwtMiddleware = {
 };
 
 const accessMiddleware = (...roles) => (req, res, next) => {
-  const accessAllowed = roles.filter(role => role === req.payload.type).length > 0;
+  const accessAllowed = roles.filter(role => role === req.payload.role).length > 0;
 
   if (!accessAllowed) {
     return next({

@@ -50,19 +50,19 @@ class AuthController {
    */
   static async changePassword(req, res) {
     try {
-      const { id } = req.payload;
-      const { oldPassword, newPassword } = validate(req.body, requestValidators.changePassword);
+      const { username } = req.body;
+      const { password, confirmPassword, oldPassword } = validate(req.body, requestValidators.changePassword);
 
-      const user = await User.findById(id);
+      const user = await User.findOne({ username });
 
-      if (user.password !== oldPassword) {
+      if (user.password !== oldPassword || password !== confirmPassword) {
         throw {
-          message: 'Original password mismatched',
+          message: 'Password mismatched',
           status: 400,
         };
       }
 
-      user.password = newPassword;
+      user.password = password;
 
       await user.save();
 
@@ -77,8 +77,10 @@ class AuthController {
 
 const requestValidators = {
   changePassword: {
+    username: joi.string().required(),
+    password: joi.string().required(),
+    confirmPassword: joi.string().required(),
     oldPassword: joi.string().required(),
-    newPassword: joi.string().required(),
   },
 }
 

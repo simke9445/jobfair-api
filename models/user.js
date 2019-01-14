@@ -29,16 +29,16 @@ UserSchema.methods.generateJWT = function() {
   return jwt.sign({
     username: this.username,
     id: this._id,
-    type: this.kind.toLowerCase(),
+    role: this.kind.toLowerCase(),
     exp: parseInt(expirationDate.getTime() / 1000, 10),
   }, 'secret');
 }
 
 UserSchema.methods.toAuthJSON = function() {
   return {
-    _id: this._id,
+    id: this._id,
     username: this.username,
-    type: this.kind.toLowerCase(),
+    role: this.kind.toLowerCase(),
     token: this.generateJWT(),
   };
 };

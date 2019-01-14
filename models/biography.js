@@ -33,7 +33,7 @@ const ExperienceSchema = new Schema({
 });
 
 const BiographySchema = new Schema({
-  firstname: {
+  firstName: {
     type: String,
     required: true,
   },

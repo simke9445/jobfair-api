@@ -3,6 +3,8 @@ const { differenceInMonths } = require('date-fns');
 
 const Company = require('../models/company');
 const Contest = require('../models/contest');
+const Student = require('../models/student');
+const CompanyReview = require('../models/companyReview');
 const { bussinessAreas } = require('../constants');
 const { validate } = require('../utils/request');
 const { convertToQuery } = require('../utils/query');
@@ -22,22 +24,12 @@ class CompanyController {
       };
       const { filter } = validate(queryParams, requestValidators.getCompanies);
 
-      let companies;
-      // if (!req.payload || req.payload.type !== 'student') {
-      //   companies = await Company.find(convertToQuery(filter))
-      //                       .select("-password")
-      //                       .select("-username");
-      // } else {
-      //   companies = await Company.find(convertToQuery(filter))
-      //                       .populate('contests')
-      //                       .select("-password")
-      //                       .select("-username");
-      // }
-
-      const mocks = mockCompanies(10);
+      const companies = await Company.find(convertToQuery(filter))
+        .select("-password")
+        .select("-username");
 
       res.statusCode = 200;
-      res.json(mocks);
+      res.json(companies);
     } catch (err) {
       res.statusCode = 400;
       res.json(err);
@@ -53,21 +45,38 @@ class CompanyController {
     try {
       const { id } = validate(req.params, requestValidators.getCompanyById);
 
-      let company;
-      // if (!req.payload || req.payload.type !== 'student') {
-      //   company = await Company.findById(id);
-      // } else {
-      //   company = await Company.findById(id)
-      //                     .populate('contests');
-      // }
+      const company = await Company.findById(id)
+        .select('-username')
+        .select('-password');
 
-      const mock = mockCompanies(1)[0];
+      const reviews = await CompanyReview.find({ company: company._id });
+      const contests = await Contest.find({ company: company._id });
 
-      mock.contests = mockContests(10);
-      mock.reviews = mockReviews(10);
+      let reviewAllowed = false;
+
+      if (req.payload && req.payload.role === 'student') {
+        const student = await Student.findById(req.payload.id)
+          .populate('biography');
+        const onGoingExp = student.biography && student.workExperiences.find(exp => exp.isOngoing);
+
+        if (onGoingExp && differenceInMonths(onGoingExp.from, new Date()) >= 1) {
+          reviewAllowed = true;
+        }
+      }
+
+      // const mock = mockCompanies(1)[0];
+
+      // mock.contests = mockContests(10);
+      // mock.reviews = mockReviews(10);
 
       res.statusCode = 200;
-      res.json(mock);
+      // TODO: check if we may do desctructuring like this
+      res.json({
+        ...company._doc,
+        reviews,
+        contests,
+        reviewAllowed,
+      });
     } catch (err) {
       res.statusCode = 400;
       res.json(err);
@@ -85,10 +94,10 @@ class CompanyController {
       const { companyId, ranking, comment } = validate(req.body, requestValidators.saveCompanyReview);
 
       const student = Student.findById(req.payload.id)
-                        .populate('biography');
+        .populate('biography');
 
       // is in company who is in the system
-      const onGoingExp = student.biography.workExperiences.find(exp => exp.isOngoing);
+      const onGoingExp = student.biography && student.biography.workExperiences.find(exp => exp.isOngoing);
 
       if (!onGoingExp) {
         return {
@@ -130,11 +139,11 @@ const requestValidators = {
       city: joi.string().allow(''),
       bussinessArea: joi.array().items(
         joi.string().valid(Object.values(bussinessAreas)),
-      ).allow(''),
+      ),
     }),
   }),
   getCompanyById: joi.object().keys({
-    id: joi.string().uuid().required(),
+    id: joi.string().required(),
   }),
   saveCompanyReview: joi.object().keys({
     companyId: joi.string().uuid().required(),

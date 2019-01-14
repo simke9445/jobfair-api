@@ -1,9 +1,9 @@
+const { isBefore, isAfter, format, parse, isWithinRange } = require('date-fns');
+
 const Student = require('../models/student');
 const Biography = require('../models/biography');
-
-// TODO: test out this file, probably doesn't work
-
-const { mockBiography, mockStudent } = require('../utils/mocks');
+const JobFair = require('../models/jobFair');
+const { isActivePeriodQuery } = require('../utils/query');
 
 class StudentController {
   /**
@@ -31,21 +31,39 @@ class StudentController {
   static async getStudentById(req, res) {
     try {
       const student = await Student.findById(req.payload.id)
-                              .populate('biography');
+        .select('-username')
+        .select('-password')
+        .populate('biography');
 
-      const mock = mockStudent();
+      let biographyUpdateAllowed = false;
 
-      mock.biography = mockBiography();
+      const [activeJobFair] = await JobFair.find({
+        $and: [isActivePeriodQuery('startDate', 'endDate')],
+      });
+
+      if (activeJobFair && activeJobFair.biographyInterval) {
+        const { from, to } = activeJobFair.biographyInterval;
+        const tmpDate = '2014-02-11T';
+        const currentTime = format(new Date(), 'HH:mm:ss');
+        const currentDate = parse(`${tmpDate}${currentTime}`);
+        const fromDate = parse(`${tmpDate}${from}`);
+        const toDate = parse(`${tmpDate}${to}`);
+
+        if (isWithinRange(currentDate, fromDate, toDate)) {
+          biographyUpdateAllowed = true;
+        }
+      }
 
       res.statusCode = 200;
-      res.json(mock);
+      res.json({
+        ...student._doc,
+        biographyUpdateAllowed,
+      });
     } catch (err) {
       res.statusCode = 400;
       res.json(err);
     }
   }
-
-  // TODO: check if we need GET request for student biography
 
   /**
    * POST: /students/:id/biography
@@ -59,18 +77,15 @@ class StudentController {
       const student = await Student.findById(id);
       const biography = new Biography(req.body);
 
-      biography.student = id;
+      biography.student = student._id;
 
-      if (student.biography) {
-        biography._id = student.biography;
-      }
+      const newBiography = await biography.save();
 
-      await biography.save();
-
-      student.biography = biography;
+      student.biography = newBiography._id;
+      student.save();
 
       res.statusCode = 200;
-      res.json(biography);
+      res.json(newBiography);
     } catch (err) {
       res.statusCode = 400;
       res.json(err);

@@ -5,10 +5,12 @@ const JobFairInterval = new Schema({
   from: {
     type: String,
     required: true,
+    default: '09:00:00',
   },
   to: {
     type: String,
     required: true,
+    default: '17:00:00',
   },
 });
 

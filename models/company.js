@@ -42,10 +42,6 @@ const CompanyScheme = new Schema({
     type: String,
     data: Buffer
   }, // work with images later
-  contests: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Contest',
-  }],
 });
 
 module.exports = User.discriminator('Company', CompanyScheme);

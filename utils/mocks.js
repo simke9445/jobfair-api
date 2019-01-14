@@ -50,10 +50,9 @@ const mockCompany = () => ({
   numberOfEmployees: faker.random.number(20),
   email: faker.internet.email(),
   website: faker.internet.url(),
-  bussinessArea:
-    Object.values(bussinessAreas)[
+  bussinessArea: Object.values(bussinessAreas)[
     faker.random.number(Object.values(bussinessAreas).length - 1)
-    ],
+  ],
   specialization: faker.company.catchPhraseNoun(),
   logoImage: imageMock,
   contests: null,

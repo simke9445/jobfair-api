@@ -29,10 +29,6 @@ const ContestSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Company',
   },
-  applications: [{
-    type: Schema.Types.ObjectId,
-    ref: 'ContestApplication',
-  }],
 });
 
 module.exports = mongoose.model('Contest', ContestSchema);

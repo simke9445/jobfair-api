@@ -17,7 +17,7 @@ const ContestApplicationSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Student',
   },
-  form: {
+  biography: {
     type: Schema.Types.ObjectId,
     ref: 'Biography',
   },
