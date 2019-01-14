@@ -9,8 +9,6 @@ const { bussinessAreas } = require('../constants');
 const { validate } = require('../utils/request');
 const { convertToQuery } = require('../utils/query');
 
-const { mockCompanies, mockContests, mockReviews } = require('../utils/mocks');
-
 class CompanyController {
   /**
    * GET: /company
@@ -64,11 +62,6 @@ class CompanyController {
         }
       }
 
-      // const mock = mockCompanies(1)[0];
-
-      // mock.contests = mockContests(10);
-      // mock.reviews = mockReviews(10);
-
       res.statusCode = 200;
       // TODO: check if we may do desctructuring like this
       res.json({
@@ -120,11 +113,10 @@ class CompanyController {
         comment,
       });
 
-      // TODO: check if we can return contest.save() instead of contest in response
-      await contest.save();
+      const newContest = await contest.save();
 
       res.statusCode = 200;
-      res.json(contest);
+      res.json(newContest);
     } catch (err) {
       res.statusCode = 400;
       res.json(err);

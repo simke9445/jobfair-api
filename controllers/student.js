@@ -3,7 +3,7 @@ const { isBefore, isAfter, format, parse, isWithinRange } = require('date-fns');
 const Student = require('../models/student');
 const Biography = require('../models/biography');
 const JobFair = require('../models/jobFair');
-const { isActivePeriodQuery } = require('../utils/query');
+const { getActivePeriodQuery } = require('../utils/query');
 
 class StudentController {
   /**
@@ -38,9 +38,10 @@ class StudentController {
       let biographyUpdateAllowed = false;
 
       const [activeJobFair] = await JobFair.find({
-        $and: [isActivePeriodQuery('startDate', 'endDate')],
+        $and: [getActivePeriodQuery('startDate', 'endDate')],
       });
 
+      // TODO: move this to utils
       if (activeJobFair && activeJobFair.biographyInterval) {
         const { from, to } = activeJobFair.biographyInterval;
         const tmpDate = '2014-02-11T';

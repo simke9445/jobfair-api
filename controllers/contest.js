@@ -6,7 +6,7 @@ const Student = require('../models/student');
 const ContestApplication = require('../models/contestApplication');
 const { validate } = require('../utils/request');
 const { contestTypes, contestApplicationStatus } = require('../constants');
-const { convertToQuery, isActivePeriodQuery } = require('../utils/query');
+const { convertToQuery, getActivePeriodQuery, getFinishedPeriodQuery, getPersonalQuery } = require('../utils/query');
 
 class ContestController {
   /**
@@ -21,10 +21,27 @@ class ContestController {
         filter: JSON.parse(req.query.filter || "{}"),
       };
       const { filter, status } = validate(queryParams, requestValidators.getContests);
+      const { role, id: userId } = req.payload;
+
+      // TODO: test this out :)
+      if (status === 'personal' && role === 'student') {
+        const applications = await ContestApplication.find({ student: userId });
+
+        const contests = await Contest.find(getFinishedPeriodQuery('to'))
+          .where('_id')
+          .in(applications.map(application => application.contest));
+
+        res.statusCode = 200
+        res.json(contests);
+
+        return;
+      }
 
       const queryArr = [
         convertToQuery(filter),
-        status === 'active' && isActivePeriodQuery('from', 'to'),
+        status === 'active' && getActivePeriodQuery('from', 'to'),
+        status === 'personal' && getPersonalQuery('company', userId),
+        status === 'personal' && getFinishedPeriodQuery('to'),
       ].filter(Boolean);
 
       const contests = await Contest.find({
@@ -62,6 +79,7 @@ class ContestController {
         }).populate('student', 'firstName lastName');
       }
 
+      // TODO: test out application approval & ranking
       if (isAfter(new Date(), contest.to)) {
         applications = await ContestApplication.find({
           contest: contest._id,
@@ -103,7 +121,29 @@ class ContestController {
 
   // TODO: check if we need GET request for contest applications
 
-  // TODO: add a patch request for companies application update
+  /**
+   * PATCH: /contests/:contestId/applications/:id
+   * @param {Request} req 
+   * @param {Response} res 
+   */
+  static async updateContestApplication(req, res) {
+    try {
+      const { id: applicationId, contestId } = req.params;
+      const { status } = req.body.status;
+
+      const application = await ContestApplication.findById(applicationId);
+      application.status = status;
+
+      const newApplication = application.save();
+
+      res.statusCode = 200;
+      res.json(newApplication);
+    } catch (err) {
+      res.statusCode = 400;
+      res.json(err);
+    }
+  }
+
   /**
    * POST: /contests/:id/applications
    * @param {Request} req 
@@ -146,11 +186,13 @@ const requestValidators = {
   getContestById: joi.object().keys({
     id: joi.string().required(),
   }),
-  // TODO: check this out if necessary, and in what way
-  // saveContestApplication: joi.object().keys({
-  //   contestId: joi.string().uuid().required(),
-  //   studentId: joi.string().uuid().required(),
-  // }),
+  saveContestApplication: joi.object().keys({
+    id: joi.string().required(),
+  }),
+  updateContestApplication: joi.object().keys({
+    id: joi.string().required(),
+    contestId: joi.string().required(),
+  }),
 }
 
 module.exports = ContestController;

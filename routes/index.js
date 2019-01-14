@@ -47,12 +47,18 @@ router.post(
   jwtMiddleware.required,
   accessMiddleware('company'),
   ContestController.saveContest,
-)
+);
 router.post(
   '/contests/:id/applications',
   jwtMiddleware.required,
   accessMiddleware('student'),
   ContestController.saveContestApplication);
+router.patch(
+  '/contests/:contestId/applications/:id',
+  jwtMiddleware.required,
+  accessMiddleware('company'),
+  ContestController.updateContestApplication,
+);
 
 // JobFairController
 router.get('/jobfairs', jwtMiddleware.required, JobFairController.getJobFairs);

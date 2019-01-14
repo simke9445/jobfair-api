@@ -35,12 +35,26 @@ const convertToQuery = (filter) => {
   return query;
 }
 
-const isActivePeriodQuery = (fromKey, toKey) => {
+const getActivePeriodQuery = (fromKey, toKey) => {
   return { $and: [{ [fromKey]: { $lte: new Date() } }, { [toKey]: { $gte: new Date() } }] };
 };
+
+const getFinishedPeriodQuery = (toKey) => {
+  return {
+    $and: [
+      { [toKey]: { $lt: new Date() } },
+    ],
+  };
+}
+
+const getPersonalQuery = (personalKey, userId) => ({
+  $and: [{ [personalKey]: userId }],
+});
 
 
 module.exports = {
   convertToQuery,
-  isActivePeriodQuery
+  getActivePeriodQuery,
+  getFinishedPeriodQuery,
+  getPersonalQuery,
 };
