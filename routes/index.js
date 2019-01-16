@@ -24,6 +24,10 @@ const fairImageUpload = multer({
   dest: 'public/images/fair',
 });
 
+const contestFileUpload = multer({
+  dest: 'public/files/contest',
+});
+
 // AuthController
 router.post('/auth/login', authMiddleware, AuthController.login);
 router.post('/auth/register', userImageUpload.single('image'), AuthController.register);
@@ -62,12 +66,14 @@ router.post(
   '/contests/:id/applications',
   jwtMiddleware.required,
   accessMiddleware('student'),
-  ContestController.saveContestApplication);
+  contestFileUpload.any(),
+  ContestController.saveContestApplication,
+);
 router.patch(
-  '/contests/:contestId/applications/:id',
+  '/contests/:id/applications',
   jwtMiddleware.required,
   accessMiddleware('company'),
-  ContestController.updateContestApplication,
+  ContestController.updateContestApplications,
 );
 
 // JobFairController

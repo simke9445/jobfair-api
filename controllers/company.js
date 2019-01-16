@@ -7,7 +7,7 @@ const Student = require('../models/student');
 const CompanyReview = require('../models/companyReview');
 const { bussinessAreas } = require('../constants');
 const { validate } = require('../utils/request');
-const { convertToQuery } = require('../utils/query');
+const { convertToQuery, getActivePeriodQuery } = require('../utils/query');
 
 class CompanyController {
   /**
@@ -48,14 +48,18 @@ class CompanyController {
         .select('-password');
 
       const reviews = await CompanyReview.find({ company: company._id });
-      const contests = await Contest.find({ company: company._id });
+      const contests = await Contest.find({
+        $and: [{ company: company._id }, getActivePeriodQuery('from', 'to')],
+      });
 
       let reviewAllowed = false;
 
       if (req.payload && req.payload.role === 'student') {
         const student = await Student.findById(req.payload.id)
           .populate('biography');
-        const onGoingExp = student.biography && student.workExperiences.find(exp => exp.isOngoing);
+        const onGoingExp =
+          student.biography && student.biography.workExperiences &&
+          student.biography.workExperiences.find(exp => exp.isOngoing);
 
         if (onGoingExp && differenceInMonths(onGoingExp.from, new Date()) >= 1) {
           reviewAllowed = true;

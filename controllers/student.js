@@ -30,7 +30,7 @@ class StudentController {
    */
   static async getStudentById(req, res) {
     try {
-      const student = await Student.findById(req.payload.id)
+      const student = await Student.findById(req.params.id)
         .select('-username')
         .select('-password')
         .populate('biography');

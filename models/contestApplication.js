@@ -22,7 +22,7 @@ const ContestApplicationSchema = new Schema({
     ref: 'Biography',
   },
   coverLetter: String,
-  coverLetterPdf: String, // TODO: work with files later
+  coverLetterPdf: String,
 });
 
 module.exports = mongoose.model('ContestApplication', ContestApplicationSchema);

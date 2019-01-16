@@ -70,7 +70,7 @@ class ContestController {
       const contest = await Contest.findById(id);
 
       const isOngoing = isWithinRange(new Date(), contest.from, contest.to);
-      const isCompanyContest = userId === contest.company;
+      const isCompanyContest = userId === contest.company.toString();
 
       let applications;
       if (isOngoing) {
@@ -119,25 +119,26 @@ class ContestController {
     }
   }
 
-  // TODO: check if we need GET request for contest applications
-
   /**
-   * PATCH: /contests/:contestId/applications/:id
+   * PATCH: /contests/:id/applications
    * @param {Request} req 
    * @param {Response} res 
    */
-  static async updateContestApplication(req, res) {
+  static async updateContestApplications(req, res) {
     try {
-      const { id: applicationId, contestId } = req.params;
-      const { status } = req.body.status;
+      const { id: contestId } = req.params;
+      const { status, applicationIds } = req.body;
 
-      const application = await ContestApplication.findById(applicationId);
-      application.status = status;
+      const applications = await ContestApplication.find({ contest: contestId })
+        .where('_id')
+        .in(applicationIds);
 
-      const newApplication = application.save();
+      applications.forEach(application => application.status = status);
+
+      const newApplications = await Promise.all([applications.map(application => application.save())]);
 
       res.statusCode = 200;
-      res.json(newApplication);
+      res.json(newApplications);
     } catch (err) {
       res.statusCode = 400;
       res.json(err);
@@ -161,6 +162,10 @@ class ContestController {
       application.student = student._id;
       application.coverLetter = req.body.coverLetter;
       application.biography = student.biography;
+
+      if (req.files && req.files.length > 0) {
+        application.coverLetterPdf = req.files[0].path;
+      }
 
       const newApplication = application.save();
 
@@ -188,10 +193,6 @@ const requestValidators = {
   }),
   saveContestApplication: joi.object().keys({
     id: joi.string().required(),
-  }),
-  updateContestApplication: joi.object().keys({
-    id: joi.string().required(),
-    contestId: joi.string().required(),
   }),
 }
 

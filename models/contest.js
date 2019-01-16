@@ -8,10 +8,7 @@ const ContestSchema = new Schema({
     type: String,
     required: true,
   },
-  from: {
-    type: Date,
-    required: true,
-  },
+  from: Date,
   to: {
     type: Date,
     required: true,
@@ -29,6 +26,11 @@ const ContestSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Company',
   },
+});
+
+ContestSchema.pre('save', function(next) {
+  this.from = new Date();
+  next();
 });
 
 module.exports = mongoose.model('Contest', ContestSchema);
