@@ -38,10 +38,7 @@ const CompanyScheme = new Schema({
     validate: bussinessAreaValidator,
   },
   specialization: String,
-  logoImage: {
-    type: String,
-    data: Buffer
-  }, // work with images later
+  image: String,
 });
 
 module.exports = User.discriminator('Company', CompanyScheme);

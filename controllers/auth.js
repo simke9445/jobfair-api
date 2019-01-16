@@ -32,6 +32,7 @@ class AuthController {
       const UserModel = getUserModel(req.body.type);
 
       const user = new UserModel(req.body);
+      user.image = req.file.path;
 
       await user.save();
 

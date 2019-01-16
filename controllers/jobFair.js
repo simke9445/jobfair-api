@@ -6,7 +6,7 @@ const JobFair = require('../models/jobFair');
 const JobFairApplication = require('../models/jobFairApplication');
 const JobFairPackage = require('../models/jobFairPackage');
 const JobFairService = require('../models/jobFairService');
-const jobFairSchedule = require('../models/jobFairSchedule');
+const JobFairSchedule = require('../models/jobFairSchedule');
 
 class JobFairController {
   /**
@@ -103,6 +103,29 @@ class JobFairController {
       newJobFair.packages = newPackages;
       newJobFair.services = newServices;
       newJobFair.schedules = newSchedules;
+
+      res.statusCode = 200;
+      res.json(newJobFair);
+    } catch (err) {
+      res.statusCode = 400;
+      res.json(err);
+    }
+  }
+
+  /**
+   * POST /jobfairs/:id/images
+   * @param {Request} req 
+   * @param {Response} res 
+   */
+  static async uploadJobFairImages(req, res) {
+    try {
+      const { id } = req.params;
+      const logoImage = req.file.path;
+
+      const jobFair = await JobFair.findById(id);
+      jobFair.logoImage = logoImage;
+
+      const newJobFair = await jobFair.save();
 
       res.statusCode = 200;
       res.json(newJobFair);

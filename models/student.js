@@ -20,10 +20,7 @@ const StudentSchema = new Schema({
   },
   yearOfStudy: Number,
   hasGraduated: Boolean,
-  profileImage: {
-    type: String,
-    data: Buffer
-  }, // work with images later
+  image: String,
   biography: {
     type: Schema.Types.ObjectId,
     ref: 'Biography',

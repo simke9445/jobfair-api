@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 
 const {
   jwtMiddleware,
@@ -14,9 +16,17 @@ const {
   JobFairController,
 } = require('../controllers');
 
+const userImageUpload = multer({
+  dest: 'public/images/user/',
+});
+
+const fairImageUpload = multer({
+  dest: 'public/images/fair',
+});
+
 // AuthController
 router.post('/auth/login', authMiddleware, AuthController.login);
-router.post('/auth/register', AuthController.register);
+router.post('/auth/register', userImageUpload.single('image'), AuthController.register);
 router.post('/auth/changePassword', AuthController.changePassword);
 
 // StudentController
@@ -69,7 +79,14 @@ router.patch(
   accessMiddleware('admin', 'company'),
   JobFairController.updateJobFair,
 );
-router.post('/jobfairs', JobFairController.saveJobFair);
+router.post('/jobfairs', fairImageUpload.single('logoImage'), JobFairController.saveJobFair);
+router.post(
+  '/jobfairs/:id/images',
+  jwtMiddleware.required,
+  accessMiddleware('admin'),
+  fairImageUpload.single('logoImage'),
+  JobFairController.uploadJobFairImages,
+);
 router.post(
   '/jobfairs/:id/applications',
   jwtMiddleware.required,
@@ -79,7 +96,7 @@ router.post(
 router.patch(
   '/jobfairs/:fairId/applications/:id',
   jwtMiddleware.required,
-  // accessMiddleware('admin'),
+  accessMiddleware('admin'),
   JobFairController.updateJobFairApplication,
 );
 

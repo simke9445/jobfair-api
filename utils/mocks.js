@@ -54,7 +54,7 @@ const mockCompany = () => ({
     faker.random.number(Object.values(bussinessAreas).length - 1)
   ],
   specialization: faker.company.catchPhraseNoun(),
-  logoImage: imageMock,
+  image: imageMock,
   contests: null,
 });
 

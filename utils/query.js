@@ -51,7 +51,7 @@ const getPersonalQuery = (personalKey, userId) => ({
   $and: [{ [personalKey]: userId }],
 });
 
-const getOverlappingPeriodQuery = (fromKey, toKey, overlapfromValue, overlapToValue) => {
+const getOverlappingPeriodQuery = (fromKey, toKey, overlapFromValue, overlapToValue) => {
   return {
     $and: [
       { [fromKey]: { $lte: overlapToValue } },
