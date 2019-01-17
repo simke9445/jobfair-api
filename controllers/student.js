@@ -4,6 +4,7 @@ const Student = require('../models/student');
 const Biography = require('../models/biography');
 const JobFair = require('../models/jobFair');
 const { getActivePeriodQuery } = require('../utils/query');
+const { isTimeWithinRange } = require('../utils/date');
 
 class StudentController {
   /**
@@ -35,25 +36,13 @@ class StudentController {
         .select('-password')
         .populate('biography');
 
-      let biographyUpdateAllowed = false;
-
       const [activeJobFair] = await JobFair.find({
         $and: [getActivePeriodQuery('startDate', 'endDate')],
       });
 
-      // TODO: move this to utils
-      if (activeJobFair && activeJobFair.biographyInterval) {
-        const { from, to } = activeJobFair.biographyInterval;
-        const tmpDate = '2014-02-11T';
-        const currentTime = format(new Date(), 'HH:mm:ss');
-        const currentDate = parse(`${tmpDate}${currentTime}`);
-        const fromDate = parse(`${tmpDate}${from}`);
-        const toDate = parse(`${tmpDate}${to}`);
-
-        if (isWithinRange(currentDate, fromDate, toDate)) {
-          biographyUpdateAllowed = true;
-        }
-      }
+      const biographyUpdateAllowed = activeJobFair &&
+        activeJobFair.biographyInterval &&
+        isTimeWithinRange(new Date(), activeJobFair.biographyInterval.from, activeJobFair.biographyInterval.to);
 
       res.statusCode = 200;
       res.json({

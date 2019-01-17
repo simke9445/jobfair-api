@@ -5,11 +5,11 @@ const { jobFairScheduleType } = require('../constants');
 
 const JobFairScheduleSchema = new Schema({
   from: {
-    type: String,
+    type: Date,
     required: true,
   },
   to: {
-    type: String,
+    type: Date,
     required: true,
   },
   area: {

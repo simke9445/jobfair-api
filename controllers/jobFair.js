@@ -1,7 +1,8 @@
 const joi = require('joi');
 
 const { validate } = require('../utils/request');
-const { getActivePeriodQuery, getOverlappingPeriodQuery } = require('../utils/query');
+const { getActivePeriodQuery, getOverlappingPeriodQuery, getPersonalQuery } = require('../utils/query');
+const { isTimeWithinRange } = require('../utils/date');
 const JobFair = require('../models/jobFair');
 const JobFairApplication = require('../models/jobFairApplication');
 const JobFairPackage = require('../models/jobFairPackage');
@@ -49,12 +50,25 @@ class JobFairController {
         role === 'company' && getPersonalQuery('company', userId),
       ].filter(Boolean);
 
-      const applications = await JobFairApplication.find({ $and: queryArr })
-        .populate('company', 'name');
+      let applications = await JobFairApplication.find({ $and: queryArr })
+        .populate('company', 'name')
+        .populate('services')
+        .populate('package');
+
+      const applicationSchedules = await Promise.all(
+        applications.map(
+          x => JobFairSchedule.find({ application: x._id, fair: jobFair._id })
+            .exec(),
+        ),
+      );
+      applications = applications.map((application, i) => ({ ...application._doc, schedules: applicationSchedules[i] }));
+
+      let applyAllowed = jobFair.applicationInterval &&
+        isTimeWithinRange(new Date(), jobFair.applicationInterval.from, jobFair.applicationInterval.to);
 
       const packages = await JobFairPackage.find({ fair: jobFair._id });
       const services = await JobFairService.find({ fair: jobFair._id });
-      const schedules = await jobFairSchedule.find({ fair: jobFair._id });
+      const schedules = await JobFairSchedule.find({ fair: jobFair._id, application: undefined });
 
       jobFair.applications = applications;
       jobFair.packages = packages;
@@ -62,7 +76,14 @@ class JobFairController {
       jobFair.schedules = schedules;
 
       res.statusCode = 200;
-      res.json(jobFair);
+      res.json({
+        ...jobFair._doc,
+        applications,
+        schedules,
+        services,
+        packages,
+        applyAllowed,
+      });
     } catch (err) {
       res.statusCode = 400;
       res.json(err);
@@ -147,8 +168,8 @@ class JobFairController {
 
       const jobFair = await JobFair.findById(id);
 
-      jobFair.biographyInterval = biographyInterval;
-      jobFair.applicationInterval = applicationInterval;
+      jobFair.biographyInterval = biographyInterval || jobFair.biographyInterval;
+      jobFair.applicationInterval = applicationInterval || jobFair.applicationInterval;
 
       const newJobFair = await jobFair.save();
 
@@ -195,13 +216,28 @@ class JobFairController {
    */
   static async updateJobFairApplication(req, res) {
     try {
-      // TODO: add schedule here
-      const { status, comment } = req.body;
+      const { status, comment, schedules } = req.body;
       const { id } = req.params;
 
       const application = await JobFairApplication.findById(id);
       application.status = status;
-      application.comment = comment;
+      application.comment = comment || application.comment;
+
+      const prevSchedules = await JobFairSchedule.find({ application: application._id });
+
+      await Promise.all(prevSchedules.map(async schedule => {
+        schedule.application = null;
+        return schedule.save();
+      }));
+
+      const currentSchedules = await JobFairSchedule.find()
+        .where('_id')
+        .in(schedules);
+
+      await Promise.all(currentSchedules.map(async schedule => {
+        schedule.application = application._id;
+        return schedule.save();
+      }));
 
       const newApplication = await application.save();
 

@@ -81,9 +81,13 @@ class ContestController {
 
       // TODO: test out application approval & ranking
       if (isAfter(new Date(), contest.to)) {
+        const queryArr = [
+          { contest: contest._id },
+          // isCompanyContest && { status: contestApplicationStatus.pending },
+        ].filter(Boolean);
+
         applications = await ContestApplication.find({
-          contest: contest._id,
-          status: isCompanyContest ? contestApplicationStatus.pending : contestApplicationStatus.accepted,
+          $and: queryArr,
         }).populate('student', 'firstName lastName');
       }
 
@@ -135,7 +139,9 @@ class ContestController {
 
       applications.forEach(application => application.status = status);
 
-      const newApplications = await Promise.all([applications.map(application => application.save())]);
+      const newApplications = await Promise.all(applications.map(async application => {
+        return application.save();
+      }));
 
       res.statusCode = 200;
       res.json(newApplications);
