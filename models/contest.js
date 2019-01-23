@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { addDays } = require('date-fns');
 
 const { contestTypes } = require('../constants');
 
@@ -30,6 +31,7 @@ const ContestSchema = new Schema({
 
 ContestSchema.pre('save', function(next) {
   this.from = new Date();
+  // this.from = addDays(new Date(), -3);
   next();
 });
 

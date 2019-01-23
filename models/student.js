@@ -11,6 +11,7 @@ const StudentSchema = new Schema({
     type: String,
     validate: {
       validator: phoneNumberValidator,
+      msg: 'Wrong phone number format!',
     },
   },
   email: {

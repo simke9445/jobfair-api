@@ -15,9 +15,7 @@ const UserSchema = new Schema({
     required: true,
     min: 8,
     max: 12,
-    validate: {
-      validator: passwordValidator,
-    },
+    validate: passwordValidator,
   },
 }, { discriminatorKey: 'kind' });
 

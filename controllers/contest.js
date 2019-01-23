@@ -29,7 +29,8 @@ class ContestController {
 
         const contests = await Contest.find(getFinishedPeriodQuery('to'))
           .where('_id')
-          .in(applications.map(application => application.contest));
+          .in(applications.map(application => application.contest))
+          .populate('company', '-password -username');
 
         res.statusCode = 200
         res.json(contests);
@@ -46,7 +47,7 @@ class ContestController {
 
       const contests = await Contest.find({
         $and: queryArr,
-      });
+      }).populate('company', '-password -username');
 
       res.statusCode = 200
       res.json(contests);
