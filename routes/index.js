@@ -54,8 +54,16 @@ router.post(
 );
 
 // ContestController
-router.get('/contests', jwtMiddleware.optional, ContestController.getContests);
-router.get('/contests/:id', jwtMiddleware.optional, ContestController.getContestById);
+router.get(
+  '/contests',
+  jwtMiddleware.required,
+  ContestController.getContests,
+);
+router.get(
+  '/contests/:id',
+  jwtMiddleware.required,
+  ContestController.getContestById,
+);
 router.post(
   '/contests',
   jwtMiddleware.required,
@@ -77,15 +85,31 @@ router.patch(
 );
 
 // JobFairController
-router.get('/jobfairs', jwtMiddleware.required, JobFairController.getJobFairs);
-router.get('/jobfairs/:id', jwtMiddleware.required, JobFairController.getJobFairById);
+router.get(
+  '/jobfairs',
+  jwtMiddleware.required,
+  accessMiddleware('company', 'admin'),
+  JobFairController.getJobFairs,
+);
+router.get(
+  '/jobfairs/:id',
+  jwtMiddleware.required,
+  accessMiddleware('company', 'admin'),
+  JobFairController.getJobFairById,
+);
 router.patch(
   '/jobfairs/:id',
   jwtMiddleware.required,
-  accessMiddleware('admin', 'company'),
+  accessMiddleware('admin'),
   JobFairController.updateJobFair,
 );
-router.post('/jobfairs', fairImageUpload.single('logoImage'), JobFairController.saveJobFair);
+router.post(
+  '/jobfairs',
+  jwtMiddleware.required,
+  accessMiddleware('admin'),
+  fairImageUpload.single('logoImage'),
+  JobFairController.saveJobFair,
+);
 router.post(
   '/jobfairs/:id/images',
   jwtMiddleware.required,

@@ -9,6 +9,14 @@ const { bussinessAreas } = require('../constants');
 const { validate } = require('../utils/request');
 const { convertToQuery, getActivePeriodQuery } = require('../utils/query');
 
+const isReviewAllowed = (company, student) => {
+  const onGoingExp =
+    student.biography && student.biography.workExperiences &&
+    student.biography.workExperiences.find(exp => exp.isOngoing);
+
+  return onGoingExp && differenceInMonths(new Date(), onGoingExp.from) >= 1 && company.name === onGoingExp.organisationName;
+};
+
 class CompanyController {
   /**
    * GET: /company
@@ -57,13 +65,8 @@ class CompanyController {
       if (req.payload && req.payload.role === 'student') {
         const student = await Student.findById(req.payload.id)
           .populate('biography');
-        const onGoingExp =
-          student.biography && student.biography.workExperiences &&
-          student.biography.workExperiences.find(exp => exp.isOngoing);
 
-        if (onGoingExp && differenceInMonths(onGoingExp.from, new Date()) >= 1) {
-          reviewAllowed = true;
-        }
+        reviewAllowed = isReviewAllowed(company, student);
       }
 
       res.statusCode = 200;
@@ -88,39 +91,32 @@ class CompanyController {
   static async saveCompanyReview(req, res) {
     try {
       // if already in company for 1 month or more, can make a review
-      const { companyId, ranking, comment } = validate(req.body, requestValidators.saveCompanyReview);
+      const { id, rating, comment } = validate({ ...req.body, ...req.params }, requestValidators.saveCompanyReview);
 
-      const student = Student.findById(req.payload.id)
+      const student = await Student.findById(req.payload.id)
         .populate('biography');
 
-      // is in company who is in the system
-      const onGoingExp = student.biography && student.biography.workExperiences.find(exp => exp.isOngoing);
+      const company = await Company.findById(id);
+      const reviewAllowed = isReviewAllowed(company, student);
 
-      if (!onGoingExp) {
+      if (!reviewAllowed) {
         return {
-          message: 'No ongoing exp.',
+          message: 'Not in company currently for at least a month',
           error: 400,
         };
       }
 
-      if (differenceInMonths(new Date(), onGoingExp.from) < 1) {
-        return {
-          message: 'Not in company for at least a month',
-          error: 400,
-        };
-      }
-
-      const contest = new Contest({
+      const companyReview = new CompanyReview({
         student: student._id,
-        company: companyId,
-        ranking,
+        company: id,
+        rating,
         comment,
       });
 
-      const newContest = await contest.save();
+      const newReview = await companyReview.save();
 
       res.statusCode = 200;
-      res.json(newContest);
+      res.json(newReview);
     } catch (err) {
       res.statusCode = 400;
       res.json(err);
@@ -142,8 +138,8 @@ const requestValidators = {
     id: joi.string().required(),
   }),
   saveCompanyReview: joi.object().keys({
-    companyId: joi.string().uuid().required(),
-    ranking: joi.number().min(1).max(10).required(),
+    id: joi.string().required(),
+    rating: joi.number().min(1).max(10).required(),
     comment: joi.string().required(),
   }),
 };

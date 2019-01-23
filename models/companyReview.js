@@ -10,7 +10,7 @@ const CompanyReviewSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Company',
   },
-  ranking: {
+  rating: {
     type: Number,
     required: true,
   },
@@ -18,6 +18,8 @@ const CompanyReviewSchema = new Schema({
     type: String,
     required: true,
   },
+}, {
+  timestamps: { createdAt: true },
 });
 
 module.exports = mongoose.model('CompanyReview', CompanyReviewSchema);

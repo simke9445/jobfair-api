@@ -32,7 +32,7 @@ const accessMiddleware = (...roles) => (req, res, next) => {
   if (!accessAllowed) {
     return next({
       message: 'Access prohibited.',
-      status: 400,
+      status: 403,
     });
   }
 
